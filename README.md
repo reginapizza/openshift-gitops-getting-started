@@ -28,15 +28,13 @@ Once OpenShift GitOps is installed, an instance of Argo CD is automatically inst
 
 ## Log into Argo CD dashboard
 
-Argo CD upon installation generates an initial admin password which is stored in a Kubernetes secret. In order to retrieve this password, run the following command to decrypt the admin password:
+Argo CD upon installation generates an initial admin password which is stored in a Kubernetes secret. As of v1.3, the user no longer has to retrieve the password from the secret but can log in directly to the Argo UI from the OpenShift console.
 
-```
-oc extract secret/openshift-gitops-cluster -n openshift-gitops --to=-
-```
-
-Click on Argo CD from the OpenShift Web Console application launcher and then log into Argo CD with `admin` username and the password retrieved from the previous step.
+Click on "Cluster Argo CD" from the OpenShift Web Console application launcher and then log into Argo CD by clicking "LOG IN VIA OPENSHIFT" button and then "Allow selected permissions" on the Authorize Access page.
 
 ![Argo CD](images/gitops-05.png)
+
+![Argo CD](images/gitops-05.1.png)
 
 ![Argo CD](images/gitops-06.png)
 
@@ -76,7 +74,7 @@ Looking at the Argo CD dashboard, you would notice that the **cluster-configs** 
 
 Click on the **Sync** button on the **cluster-configs** application and then on **Synchronize** button after reviewing the changes that will be rolled out to the cluster.
 
-Once the sync is completed successfully, you would see that Argo CD reports a the configurations to be currently in sync with the Git repository and healthy. You can click on the **cluster-configs** application to check the details of sync resources and their status on the cluster. 
+Once the sync is completed successfully, you would see that Argo CD reports the configurations to be currently in sync with the Git repository and healthy. You can click on the **cluster-configs** application to check the details of sync resources and their status on the cluster. 
 
 ![Argo CD - Cluster Config](images/gitops-09.png)
 
@@ -98,7 +96,7 @@ The [app](app/) directory in the current Git repository contains the Kubernetes 
 
 In the Argo CD dashboard, click on the **New App** button to add a new Argo CD application that syncs a Git repository containing cluster configurations with the OpenShift cluster.
 
-Create a new Argo CD application by clicking on the **New App** button in the Argo CD dashboard and entering the following details.
+Entering the following details for your new application in the form.
 
 * Application Name: `spring-petclinic`
 * Project: `default`
@@ -116,11 +114,16 @@ Create a new Argo CD application by clicking on the **New App** button in the Ar
 >  oc create -f argo/app.yaml
 >  ```
 
-Because we set up the sync policy to `Automatic`, as soon as the Argo CD application is created, a sync is started in order to rollout the Spring PetClinic manifests to the `spring-petclinic` namespace.
+You will notice that your app will be created but not successfully sync. This is because you must first allow the `openshift-gitops` namespace to manage the `spring-petclinic` namespace by running the following command: 
+>  ```
+>  oc label namespace spring-petclinic argocd.argoproj.io/managed-by=openshift-gitops
+>  ```
+
+Now your application should automatically attempt to sync again because we set up the sync policy to `Automatic`. A sync is started in order to rollout the Spring PetClinic manifests to the `spring-petclinic` namespace.
 
 ![Argo CD - Spring PetClinic](images/gitops-15.png)
 
-Click on the **app-spring-petclinic** in the Argo CD dashboard to view the application resources that are deployed to the cluster.
+Click on the **spring-petclinic** in the Argo CD dashboard to view the application resources that are deployed to the cluster.
 
 ![Argo CD - Spring PetClinic](images/gitops-14.png)
 
@@ -138,7 +141,7 @@ oc scale deployment spring-petclinic --replicas 2  -n spring-petclinic
 
 You would notice that the deployment momentarily scales up to 2 pods and immediately scales down again to 1 pod as Argo CD detects a drift from the Git repository and auto-heals the application on the OpenShift cluster. This behavior can be controlled by the [Self-heal](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/#automatic-self-healing) setting.
 
-In Argo CD dashboard, click on the **app-spring-petclinic** and then **App Details** &rarr; **Events**. You can see the event details of Argo CD detecting that the deployment resources is out of sync on the cluster and resyncing the Git repository to correct it.
+In Argo CD dashboard, click on the **spring-petclinic** and then **App Details** &rarr; **Events**. You can see the event details of Argo CD detecting that the deployment resources is out of sync on the cluster and resyncing the Git repository to correct it.
 
 ![Argo CD - Events](images/gitops-13.png)
 
@@ -160,7 +163,7 @@ spec:
       enabled: true
 ```
 
-![Argo CD](images/gitops-16.png)
+![Argo CD](images/gitops-18.png)
 
 > Alternatively, you can run the following CLI commands:
 > ```
