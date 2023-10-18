@@ -13,7 +13,7 @@ spec:
       recurse: true
     path: app
     repoURL: https://github.com/siamaksade/openshift-gitops-getting-started.git
-    targetRevision: v0.2.0
+    targetRevision: v0.3.0
   syncPolicy:
     automated:
       prune: true
